@@ -13,21 +13,23 @@ def enterName(isFile=False):
             print("Please try again.")
         else:
             break
+
 ## delete system32
     if isFile:
-        compare_names = [f.startswith(str(name)) for f in os.listdir(".")]
+        compare_names = [f.startswith(name) for f in os.listdir(".")]
         if any(compare_names):
             print(f"There is already a similar file that starts with these chars in the directory.")
             print("Aborting for safety...")
             sys.exit()
         else:
             print(f"Creating file {name}.txt in {os.getcwd()}")
+            open(name + ".txt",'a').close()
 
     return name
 
 ## Function for validating types according to SQL restrictions.
 ## This does NOT validate the values that are inserted into the table.
-def validate_type(dt):
+def validate_type():
     dt = str(input())
     while True:
         if dt.lower() not in SUPPORTED_TYPES:
@@ -48,10 +50,10 @@ def validate_type(dt):
                     except ValueError:
                         print("Could not interpret input as a numeric value. Please try again.")
 
-                return f"varchar({size})"
+                return ["varchar", f"({size})"]
             
             elif dt.lower() == 'int':
-                return "int"
+                return ["int",""]
 
             elif dt.lower() == 'decimal':
                 print("Enter the precision value.")
@@ -80,10 +82,10 @@ def validate_type(dt):
                     except ValueError:
                         print("Could not interpret input as a numeric value. Please try again.")
             
-                return f"decimal({precision},{scale})"
+                return ["decimal",f"({precision},{scale})"]
             
             elif dt.lower() == 'date':
-                return "date"
+                return ["date",""]
 
 
 def genTable(file, table, columns):
@@ -100,16 +102,39 @@ def genTable(file, table, columns):
                 break
 
         print("Enter data type:")
-        col_data[name] = validate_type(dtype) 
+        col_data[name] = validate_type()
 
+    try:
+        with open(file + ".txt", 'w') as t:
+            t.write(f"CREATE TABLE {table} (" + "\n")
+            for col, dtype in col_data.items():
+                t.write(f"{col} {''.join(dtype)}" + "\n")
+            t.write(")" + "\n")
+    except FileNotFoundError:
+        print("Unexpected error: file not found. Aborting.")
+        sys.exit()
 
-    with open(file + ".txt", 'w') as t:
-        t.write(f"CREATE TABLE {table} (" + "\n")
-        for col, dtype in col_data.items():
-            t.write(f"{col} {dtype}" + "\n")
-        t.write(")" + "\n")
+    ##Now for the values themselves
+    print("")
+    col_values = {}
+    for key in col_data:
+        print("Type: {key}")
+        print(f"Enter the values for column {col_data[key]} separated by spaces, commas, or semicolons: ")
+        print("Make sure there aren't too many possible values,")
+        if col_data[key][0] == 'varchar':
+            strs = re.split("; |, ", str(input()))
+        elif col_data[key][0] == 'int':
+            print('Range?')
+            ##TODO
+        elif col_data[key][0] == 'decimal':
+            print("Range and increments?")
+            ##TODO
+        elif col_data[key][0] == 'date':
+            print("Enter a valid date delimited by hyphens")
+            ##TODO
             
-        
+    ##ALSO do something about primary and foreign keys???
+
 
 
 def main():
@@ -136,7 +161,6 @@ def main():
 
     genTable(filename, tablename, COLS)
 
-    ##TODO: Enter the number of rows and fill with random values. No duplicates. O(n^2)?????
-
+    ##fillTable()
 
 main()
