@@ -26,8 +26,8 @@ def main():
         except ValueError:
             print("Could not interpret input as a numeric value. Please try again.")
 
-    gentable.genTable(filename, tablename, COLS)
-
-    ##gentable.fillTable()
+    columns = gentable.genTable(filename, tablename, COLS)
+    gentable.fillTable(filename, tablename, columns)
+    names.bottomBase(filename)
 
 main()

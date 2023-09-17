@@ -23,10 +23,15 @@ def enterName(isFile=False):
             sys.exit()
         else:
             print(f"Creating file {name}.sql in {os.getcwd()}")
-            with open(name + ".sql", 'w') as t, open('base.sql', 'r') as top_base:
+            with open(name + ".sql", 'w') as t, open('topBase.sql', 'r') as top_base:
                 for line in top_base:
                     t.write(line)
                 t.write("\n")
-                print("Wrote top base!")
     return name
+
+def bottomBase(name):
+    with open(name + ".sql", 'a') as t, open('bottomBase.sql', 'r') as bottom_base:
+        for line in bottom_base:
+            t.write(line)
+        t.write("\n")
 
